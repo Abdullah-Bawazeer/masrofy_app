@@ -4,6 +4,7 @@ import 'package:masrofy_app/features/auth/view/pages/auth_page.dart';
 import 'package:masrofy_app/features/depts/view/pages/depts_page.dart';
 import 'package:masrofy_app/features/goals/view/pages/goals_page.dart';
 import 'package:masrofy_app/features/home/views/pages/homw_page.dart';
+import 'package:masrofy_app/features/incom/view/pages/income_page.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: AppRoutes.auth,
@@ -24,6 +25,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.depts,
       builder: (context, state) => const DeptsPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.income,
+      builder: (context, state) => const IncomePage(),
     ),
   ],
 );

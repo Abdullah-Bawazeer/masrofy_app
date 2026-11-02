@@ -5,7 +5,7 @@ import 'package:masrofy_app/core/extensions/num_extension.dart';
 import 'package:masrofy_app/core/themes/app_colors.dart';
 import 'package:masrofy_app/core/themes/app_sizes.dart';
 
-class _GoalCard extends StatelessWidget {
+class GoalCard extends StatelessWidget {
   final String title;
   final String current;
   final String target;
@@ -14,7 +14,7 @@ class _GoalCard extends StatelessWidget {
   final IconData icon;
   final Color color;
 
-  const _GoalCard({
+  const GoalCard({
     required this.title,
     required this.current,
     required this.target,

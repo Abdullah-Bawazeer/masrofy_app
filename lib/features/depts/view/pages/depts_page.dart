@@ -7,6 +7,8 @@ import 'package:masrofy_app/core/themes/app_colors.dart';
 import 'package:masrofy_app/core/themes/app_sizes.dart';
 import 'package:masrofy_app/core/widgets/custom_app_bar.dart';
 import 'package:masrofy_app/core/widgets/custom_app_scaffold.dart';
+import 'package:masrofy_app/features/depts/view/widgets/debt_summery_card.dart';
+import 'package:masrofy_app/features/depts/view/widgets/dept_card.dart';
 
 class DeptsPage extends StatefulWidget {
   const DeptsPage({super.key});
@@ -84,7 +86,7 @@ class _DeptsPageState extends State<DeptsPage> {
           children: [
             CustomAppBar(title: 'الديون'),
             AppSizes.m.verticalSpace,
-            const _DebtsSummeryCard(),
+            const DebtsSummeryCard(),
             AppSizes.m.verticalSpace,
 
             Row(
@@ -125,7 +127,7 @@ class _DeptsPageState extends State<DeptsPage> {
                 separatorBuilder: (context, index) => AppSizes.m.verticalSpace,
                 itemBuilder: (context, index) {
                   final debt = filteredDepts[index];
-                  return _DebtCard(
+                  return DebtCard(
                     title: debt['title'] as String,
                     subtitle: debt['subtitle'] as String,
                     remaining: debt['remaining'] as String,
@@ -177,254 +179,7 @@ class _DeptsPageState extends State<DeptsPage> {
   }
 }
 
-class _DebtCard extends StatelessWidget {
-  const _DebtCard({
-    super.key,
-    required this.title,
-    required this.subtitle,
-    required this.remaining,
-    required this.total,
-    required this.percentage,
-    required this.progress,
-    required this.color,
-  });
 
-  final String title;
-  final String subtitle;
-  final String remaining;
-  final String total;
-  final int percentage;
-  final double progress;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = context.isDarkMode;
-    return Container(
-      padding: 16.allPadding,
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        borderRadius: AppSizes.rL.radius,
-        border: Border.all(
-          color: isDark ? AppColors.borderDark : AppColors.borderLight,
-        ),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: context.textTheme.titleMedium),
-                  4.verticalSpace,
-                  Text(
-                    subtitle,
-                    style: context.textTheme.bodySmall?.copyWith(
-                      color: isDark
-                          ? AppColors.textSecondaryDark
-                          : AppColors.textSecondaryLight,
-                    ),
-                  ),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '$remaining EGP',
-                    style: context.textTheme.titleMedium?.copyWith(),
-                  ),
-                  2.verticalSpace,
-                  Text(
-                    'متبقي',
-                    style: context.textTheme.labelSmall?.copyWith(
-                      color: isDark
-                          ? AppColors.textSecondaryDark
-                          : AppColors.textSecondaryLight,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          12.verticalSpace,
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    Text(
-                      '$percentage%',
-                      style: context.textTheme.labelSmall?.copyWith(
-                        color: isDark
-                            ? AppColors.textSecondaryDark
-                            : AppColors.textSecondaryLight,
-                      ),
-                    ),
-                    8.horizontalSpace,
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius: 10.r.radius,
-                        child: LinearProgressIndicator(
-                          value: progress,
-                          minHeight: 6.h,
-                          valueColor: AlwaysStoppedAnimation<Color>(color),
-                          backgroundColor: isDark
-                              ? AppColors.borderDark
-                              : AppColors.grey100,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              24.horizontalSpace,
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '$total EGP',
-                    style: context.textTheme.bodySmall?.copyWith(
-                      color: isDark
-                          ? AppColors.textSecondaryDark
-                          : AppColors.textSecondaryLight,
-                    ),
-                  ),
-                  2.verticalSpace,
-                  Text(
-                    'الاجمالي',
-                    style: context.textTheme.labelSmall?.copyWith(
-                      color: isDark
-                          ? AppColors.textSecondaryDark
-                          : AppColors.textSecondaryLight,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _DebtsSummeryCard extends StatelessWidget {
-  const _DebtsSummeryCard({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: 16.allPadding,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFF87171), Color(0xFFFEF4444)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: AppSizes.rXL.radius,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.expense.withValues(alpha: 0.15),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'اجمالي الديون',
-                style: context.textTheme.titleMedium?.copyWith(
-                  color: AppColors.white.withValues(alpha: 0.8),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              AppSizes.xs.verticalSpace,
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
-                children: [
-                  Text(
-                    '5,200',
-                    style: context.textTheme.headlineMedium?.copyWith(
-                      color: AppColors.white.withValues(alpha: 0.8),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  AppSizes.xs.horizontalSpace,
-                  Text(
-                    'EGP',
-                    style: context.textTheme.titleMedium?.copyWith(
-                      color: AppColors.white.withValues(alpha: 0.8),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-              AppSizes.s.verticalSpace,
-              Text(
-                'متيقي',
-                style: context.textTheme.titleMedium?.copyWith(
-                  color: AppColors.white.withValues(alpha: 0.9),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-
-          Column(
-            children: [
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  SizedBox(
-                    width: 54.w,
-                    height: 54.w,
-                    child: CircularProgressIndicator(
-                      value: 0.45,
-                      strokeWidth: 5.w,
-                      color: AppColors.white,
-                      backgroundColor: AppColors.white.withValues(alpha: 0.25),
-                    ),
-                  ),
-                  Text(
-                    '45%',
-                    style: context.textTheme.bodySmall?.copyWith(
-                      color: AppColors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-
-              AppSizes.s.verticalSpace,
-              Text(
-                'تم السداده',
-                style: context.textTheme.titleSmall?.copyWith(
-                  color: AppColors.white.withValues(alpha: 0.9),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-
-
-    // //headre row
             // Row(
             //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
             //   children: [

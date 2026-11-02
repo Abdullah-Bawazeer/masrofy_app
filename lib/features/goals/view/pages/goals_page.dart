@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:masrofy_app/core/constants/app_assets.dart';
 import 'package:masrofy_app/core/extensions/build_context.dart';
 import 'package:masrofy_app/core/extensions/num_extension.dart';
 import 'package:masrofy_app/core/extensions/widget_extension.dart';
@@ -8,6 +7,8 @@ import 'package:masrofy_app/core/themes/app_colors.dart';
 import 'package:masrofy_app/core/themes/app_sizes.dart';
 import 'package:masrofy_app/core/widgets/custom_app_bar.dart';
 import 'package:masrofy_app/core/widgets/custom_app_scaffold.dart';
+import 'package:masrofy_app/features/goals/view/widgets/goal_crad.dart';
+import 'package:masrofy_app/features/goals/view/widgets/goals_summery_card.dart';
 
 class GoalsPage extends StatefulWidget {
   const GoalsPage({super.key});
@@ -93,7 +94,7 @@ class _GoalsPageState extends State<GoalsPage> {
             CustomAppBar(title: 'الأهداف المالية'),
             AppSizes.m.verticalSpace,
 
-            _GoalsSummaryCard(),
+            GoalsSummaryCard(),
             AppSizes.l.verticalSpace,
 
             Row(
@@ -134,7 +135,7 @@ class _GoalsPageState extends State<GoalsPage> {
                 separatorBuilder: (context, index) => AppSizes.m.verticalSpace,
                 itemBuilder: (context, index) {
                   final goal = filteredGoals[index];
-                  return _GoalCard(
+                  return GoalCard(
                     title: goal['title'] as String,
                     current: goal['current'] as String,
                     target: goal['target'] as String,
@@ -181,178 +182,6 @@ class _GoalsPageState extends State<GoalsPage> {
               color: isSelected ? activeColor : Colors.transparent,
               borderRadius: 1.r.radius,
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _GoalCard extends StatelessWidget {
-  final String title;
-  final String current;
-  final String target;
-  final int percentage;
-  final double progressValue;
-  final IconData icon;
-  final Color color;
-
-  const _GoalCard({
-    required this.title,
-    required this.current,
-    required this.target,
-    required this.percentage,
-    required this.progressValue,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = context.isDarkMode;
-
-    return Container(
-      padding: 16.allPadding,
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : Colors.white,
-        borderRadius: BorderRadius.circular(AppSizes.rL),
-        border: Border.all(
-          color: isDark ? AppColors.borderDark : AppColors.borderLight,
-        ),
-      ),
-      // تم دمج النصوص داخل Expanded لحماية الشاشة من خطأ Overflow
-      child: Row(
-        children: [
-          Container(
-            width: 44.w,
-            height: 44.h,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppSizes.rM),
-            ),
-            child: Icon(icon, color: color, size: AppSizes.iconM),
-          ),
-          AppSizes.m.horizontalSpace,
-
-          // 🔥 حماية الـ UI: استخدام Expanded للنصوص
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: context.textTheme.titleMedium),
-                4.verticalSpace,
-                Text('$current EGP', style: context.textTheme.bodyMedium),
-                2.verticalSpace,
-                Text(
-                  'من $target EGP',
-                  style: context.textTheme.bodySmall?.copyWith(
-                    color: isDark
-                        ? AppColors.textSecondaryDark
-                        : AppColors.textSecondaryLight,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          AppSizes.s.horizontalSpace,
-
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '$percentage%',
-                style: context.textTheme.bodySmall?.copyWith(
-                  color: isDark
-                      ? AppColors.textSecondaryDark
-                      : AppColors.textSecondaryLight,
-                ),
-              ),
-              8.verticalSpace,
-              SizedBox(
-                width: 80.w,
-                child: ClipRRect(
-                  borderRadius: 10.r.radius,
-                  child: LinearProgressIndicator(
-                    value: progressValue,
-                    minHeight: 6.h,
-                    backgroundColor: isDark
-                        ? AppColors.borderDark
-                        : AppColors.grey100,
-                    color: color,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _GoalsSummaryCard extends StatelessWidget {
-  const _GoalsSummaryCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: 16.allPadding,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(AppSizes.rXL),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.purple.withValues(alpha: 0.15),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'إجمالي الأهداف',
-                  style: context.textTheme.bodyMedium?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                AppSizes.xs.verticalSpace,
-                Text(
-                  '4',
-                  style: context.textTheme.displayMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                AppSizes.s.verticalSpace,
-                Text(
-                  'المكتملة من 5',
-                  style: context.textTheme.bodySmall?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          AppSizes.s.horizontalSpace,
-          Image.asset(
-            AppAssets.goals,
-            width: 120.w,
-            height: 120.h,
-            fit: BoxFit.contain,
           ),
         ],
       ),

@@ -5,8 +5,8 @@ import 'package:masrofy_app/core/extensions/num_extension.dart';
 import 'package:masrofy_app/core/themes/app_colors.dart';
 import 'package:masrofy_app/core/themes/app_sizes.dart';
 
-class _DebtsSummeryCard extends StatelessWidget {
-  const _DebtsSummeryCard({super.key});
+class DebtsSummeryCard extends StatelessWidget {
+  const DebtsSummeryCard({super.key});
 
   @override
   Widget build(BuildContext context) {

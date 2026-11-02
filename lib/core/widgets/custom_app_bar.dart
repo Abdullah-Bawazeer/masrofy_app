@@ -18,7 +18,7 @@ class CustomAppBar extends StatelessWidget {
           },
           icon: Icon(
             Icons.arrow_back_rounded,
-            color: context.theme.colorScheme.onBackground,
+            color: context.colorScheme.onSurface,
             size: AppSizes.iconM,
           ),
         ),
@@ -34,7 +34,7 @@ class CustomAppBar extends StatelessWidget {
           },
           icon: Icon(
             Icons.add_rounded,
-            color: context.theme.colorScheme.onBackground,
+            color: context.colorScheme.onSurface,
             size: AppSizes.iconM,
           ),
         ),

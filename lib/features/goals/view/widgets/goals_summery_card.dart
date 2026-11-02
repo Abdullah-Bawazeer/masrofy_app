@@ -6,8 +6,8 @@ import 'package:masrofy_app/core/extensions/num_extension.dart';
 import 'package:masrofy_app/core/themes/app_colors.dart';
 import 'package:masrofy_app/core/themes/app_sizes.dart';
 
-class _GoalsSummaryCard extends StatelessWidget {
-  const _GoalsSummaryCard();
+class GoalsSummaryCard extends StatelessWidget {
+  const GoalsSummaryCard();
 
   @override
   Widget build(BuildContext context) {
