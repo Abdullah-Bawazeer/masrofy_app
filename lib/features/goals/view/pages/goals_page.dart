@@ -6,6 +6,7 @@ import 'package:masrofy_app/core/extensions/num_extension.dart';
 import 'package:masrofy_app/core/extensions/widget_extension.dart';
 import 'package:masrofy_app/core/themes/app_colors.dart';
 import 'package:masrofy_app/core/themes/app_sizes.dart';
+import 'package:masrofy_app/core/widgets/custom_app_bar.dart';
 import 'package:masrofy_app/core/widgets/custom_app_scaffold.dart';
 
 class GoalsPage extends StatefulWidget {
@@ -89,30 +90,7 @@ class _GoalsPageState extends State<GoalsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    context.pop();
-                  }, //context.pop
-                  icon: Icon(
-                    Icons.arrow_back_rounded,
-                    color: iconColor,
-                    size: AppSizes.iconM,
-                  ),
-                ),
-                Text("الأهداف المالية", style: context.textTheme.titleLarge),
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(
-                    Icons.add_rounded,
-                    color: iconColor,
-                    size: AppSizes.iconM,
-                  ),
-                ),
-              ],
-            ),
+            CustomAppBar(title: 'الأهداف المالية'),
             AppSizes.m.verticalSpace,
 
             _GoalsSummaryCard(),
