@@ -12,5 +12,5 @@ extension BuildContextExtension on BuildContext {
   double get screenWidth => screenSize.width;
   bool get isDarkMode => theme.brightness == Brightness.dark;
 
-  void pop<T>([T? result]) => Navigator.pop(this, result);
+  //void pop<T>([T? result]) => Navigator.pop(this, result);
 }
