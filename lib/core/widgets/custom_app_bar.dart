@@ -5,7 +5,8 @@ import 'package:masrofy_app/core/themes/app_sizes.dart';
 
 class CustomAppBar extends StatelessWidget {
   final String title;
-  const CustomAppBar({super.key, required this.title});
+  final VoidCallback? addNewItem;
+  const CustomAppBar({super.key, required this.title, this.addNewItem});
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +31,7 @@ class CustomAppBar extends StatelessWidget {
           ),
         ),
         IconButton(
-          onPressed: () {
-            // Handle add button press
-          },
+          onPressed: addNewItem,
           icon: Icon(
             Icons.add_rounded,
             color: context.colorScheme.onSurface,

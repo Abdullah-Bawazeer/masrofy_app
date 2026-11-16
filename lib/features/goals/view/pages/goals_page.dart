@@ -1,5 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:masrofy_app/core/extensions/build_context.dart';
 import 'package:masrofy_app/core/extensions/num_extension.dart';
 import 'package:masrofy_app/core/extensions/widget_extension.dart';
@@ -7,83 +10,37 @@ import 'package:masrofy_app/core/themes/app_colors.dart';
 import 'package:masrofy_app/core/themes/app_sizes.dart';
 import 'package:masrofy_app/core/widgets/custom_app_bar.dart';
 import 'package:masrofy_app/core/widgets/custom_app_scaffold.dart';
+import 'package:masrofy_app/features/goals/controller/goal_controller.dart';
+import 'package:masrofy_app/features/goals/models/goal_modal.dart';
 import 'package:masrofy_app/features/goals/view/widgets/goal_crad.dart';
+import 'package:masrofy_app/features/goals/view/widgets/goal_form.dart';
 import 'package:masrofy_app/features/goals/view/widgets/goals_summery_card.dart';
 
-class GoalsPage extends StatefulWidget {
+class GoalsPage extends ConsumerStatefulWidget {
   const GoalsPage({super.key});
 
   @override
-  State<GoalsPage> createState() => _GoalsPageState();
+  ConsumerState<GoalsPage> createState() => _GoalsPageState();
 }
 
-class _GoalsPageState extends State<GoalsPage> {
+class _GoalsPageState extends ConsumerState<GoalsPage> {
   int _selectedTabIndex = 0;
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _currentController = TextEditingController();
+  final TextEditingController _targetController = TextEditingController();
 
-  // تم تعديل الأرقام الصحيحة مثل 1 لتصبح 1.0 كأفضل ممارسة للبيانات الثابتة
-  final List _allGoals = [
-    {
-      'title': 'شراء سيارة',
-      'current': '250,000',
-      'target': '250,000',
-      'percentage': 100,
-      'progress': 1.0,
-      'icon': Icons.directions_car_rounded,
-      'color': AppColors.blue,
-      'isActive': false,
-    },
-    {
-      'title': 'سفر تركيا',
-      'current': '12,500',
-      'target': '25,000',
-      'percentage': 50,
-      'progress': 0.5,
-      'icon': Icons.airplanemode_active_rounded,
-      'color': AppColors.success,
-      'isActive': true,
-    },
-    {
-      'title': 'صندوق الطوارئ',
-      'current': '8,000',
-      'target': '10,000',
-      'percentage': 80,
-      'progress': 0.8,
-      'icon': Icons.shield_rounded,
-      'color': AppColors.success,
-      'isActive': true,
-    },
-    {
-      'title': 'شراء منزل',
-      'current': '0',
-      'target': '500,000',
-      'percentage': 0,
-      'progress': 0.0,
-      'icon': Icons.home_rounded,
-      'color': AppColors.expense,
-      'isActive': true,
-    },
-    {
-      'title': 'هاتف جديد',
-      'current': '15,000',
-      'target': '15,000',
-      'percentage': 100,
-      'progress': 1.0,
-      'icon': Icons.phone_android_rounded,
-      'color': AppColors.success,
-      'isActive': false,
-    },
-  ];
+  @override
+  void dispose() {
+    _currentController.dispose();
+    _currentController.dispose();
+    _targetController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final iconColor = context.colorScheme.onSurface;
-
-    final filteredGoals = _allGoals.where((goal) {
-      if (_selectedTabIndex == 1) {
-        return !goal['isActive'];
-      }
-      return goal['isActive'];
-    }).toList();
+    final goalsController = ref.watch(goalsControllerProvider);
 
     return AppScaffold(
       isDark: context.isDarkMode,
@@ -91,62 +48,86 @@ class _GoalsPageState extends State<GoalsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            CustomAppBar(title: 'الأهداف المالية'),
-            AppSizes.m.verticalSpace,
-
-            GoalsSummaryCard(),
-            AppSizes.l.verticalSpace,
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildTabItem('نشطة', index: 0),
-                AppSizes.l.horizontalSpace,
-                _buildTabItem('مكتملة', index: 1),
-              ],
+            CustomAppBar(
+              title: 'الأهداف المالية',
+              addNewItem: _showAddGoalSheet,
             ),
-            AppSizes.l.verticalSpace,
-
-            if (filteredGoals.isEmpty)
-              Center(
-                child: Column(
+            goalsController.when(
+              data: (List<GoalModal> goals) {
+                final filteredGoals = _selectedTabIndex == 1
+                    ? goals.where((goal) => !goal.isActive).toList()
+                    : goals.where((goal) => goal.isActive).toList();
+                return Column(
                   children: [
-                    AppSizes.xxl.verticalSpace,
-                    Icon(
-                      Icons.track_changes_outlined,
-                      size: AppSizes.iconXL,
-                      color: AppColors.grey400,
+                    GoalsSummaryCard(
+                      total: goals.length.toString(),
+                      achived: goals
+                          .map((goal) => goal.isActive)
+                          .toList()
+                          .length
+                          .toString(),
                     ),
-                    AppSizes.m.verticalSpace,
-                    Text(
-                      'لا توجد أهداف هنا',
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: AppColors.grey500,
+                    AppSizes.l.verticalSpace,
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildTabItem('نشطة', index: 0),
+                        AppSizes.l.horizontalSpace,
+                        _buildTabItem('مكتملة', index: 1),
+                      ],
+                    ),
+                    AppSizes.l.verticalSpace,
+
+                    if (filteredGoals.isEmpty)
+                      Center(
+                        child: Column(
+                          children: [
+                            AppSizes.xxl.verticalSpace,
+                            Icon(
+                              Icons.track_changes_outlined,
+                              size: AppSizes.iconXL,
+                              color: AppColors.grey400,
+                            ),
+                            AppSizes.m.verticalSpace,
+                            Text(
+                              'لا توجد أهداف هنا',
+                              style: context.textTheme.bodyMedium?.copyWith(
+                                color: AppColors.grey500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: filteredGoals.length,
+                        separatorBuilder: (context, index) =>
+                            AppSizes.m.verticalSpace,
+                        itemBuilder: (context, index) {
+                          final goal = filteredGoals[index];
+                          return InkWell(
+                            onTap: () => _showAddGoalSheet(goal: goal),
+                            child: GoalCard(
+                              goal: goal,
+                              icon: Icons.savings_rounded,
+                              color: AppColors.purple,
+                            ),
+                          );
+                        },
                       ),
-                    ),
+                    AppSizes.m.verticalSpace,
                   ],
-                ),
-              )
-            else
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: filteredGoals.length,
-                separatorBuilder: (context, index) => AppSizes.m.verticalSpace,
-                itemBuilder: (context, index) {
-                  final goal = filteredGoals[index];
-                  return GoalCard(
-                    title: goal['title'] as String,
-                    current: goal['current'] as String,
-                    target: goal['target'] as String,
-                    percentage: goal['percentage'] as int,
-                    // 🔥 الحل الجذري لمشكلة الـ Casting هنا
-                    progressValue: (goal['progress'] as num).toDouble(),
-                    icon: goal['icon'] as IconData,
-                    color: goal['color'] as Color,
-                  );
-                },
-              ),
+                );
+              },
+              error: (error, stackTrace) =>
+                  Text('تعذر تحميل الاهداف').center().paddingAll(AppSizes.l),
+              loading: () => CircularProgressIndicator.adaptive()
+                  .center()
+                  .paddingAll(AppSizes.l),
+            ),
           ],
         ).paddingAll(AppSizes.screenPadding ?? 16.0),
       ),
@@ -185,6 +166,97 @@ class _GoalsPageState extends State<GoalsPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _deleteGoal(GoalModal goal) async {
+    try {
+      await ref.read(goalsControllerProvider.notifier).deleteGoal(goal.id);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('تم حذف الهدف بنجاح')));
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('حدث خطاء اثناء حذف الهدف')));
+    }
+  }
+
+  Future<void> _onSave({GoalModal? goal}) async {
+    final isEditing = goal != null;
+    final newGoal = GoalModal(
+      id: goal?.id ?? '',
+      title: _titleController.text.trim(),
+      current: double.tryParse(_currentController.text) ?? 0,
+      target: double.tryParse(_targetController.text) ?? 0,
+    );
+    if (_targetController.text.isEmpty ||
+        double.tryParse(_targetController.text)! <= 0) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ادخل اسما صحيحا وهدف اكثر من صفر')),
+      );
+      return;
+    }
+
+    try {
+      final controller = ref.read(goalsControllerProvider.notifier);
+      if (!isEditing) {
+        await controller.addGoal(newGoal);
+      } else {
+        await controller.updateGoal(newGoal);
+      }
+      _currentController.clear();
+      _titleController.clear();
+      _targetController.clear();
+      context.pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isEditing ? 'تم تعيل الهدف بنجاح' : 'تمت اضافة الهدف بنجاح',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isEditing
+                ? 'حدث خطاء اثناء تعديل الهدف'
+                : 'حدث خطاء اثناء اضافة الهدف',
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _showAddGoalSheet({GoalModal? goal}) async {
+    final isEditing = goal != null;
+    _titleController.text = isEditing ? goal.title : "";
+    _currentController.text = isEditing ? goal.current.toStringAsFixed(0) : "";
+    _targetController.text = isEditing ? goal.target.toStringAsFixed(0) : "";
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return GoalForm(
+          isEditing: isEditing,
+          titleController: _titleController,
+          currentController: _currentController,
+          targetController: _targetController,
+          onDelete: isEditing
+              ? () async {
+                  context.pop();
+                  await _deleteGoal(goal);
+                }
+              : null,
+          onSave: () {
+            _onSave(goal: isEditing ? goal : null);
+          },
+        );
+      },
     );
   }
 }

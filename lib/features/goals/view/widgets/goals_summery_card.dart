@@ -7,7 +7,10 @@ import 'package:masrofy_app/core/themes/app_colors.dart';
 import 'package:masrofy_app/core/themes/app_sizes.dart';
 
 class GoalsSummaryCard extends StatelessWidget {
-  const GoalsSummaryCard();
+  final String total;
+  final String achived;
+
+  const GoalsSummaryCard({required this.total, required this.achived});
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +48,7 @@ class GoalsSummaryCard extends StatelessWidget {
                 ),
                 AppSizes.xs.verticalSpace,
                 Text(
-                  '4',
+                  achived,
                   style: context.textTheme.displayMedium?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -53,7 +56,7 @@ class GoalsSummaryCard extends StatelessWidget {
                 ),
                 AppSizes.s.verticalSpace,
                 Text(
-                  'المكتملة من 5',
+                  'المكتملة من $total',
                   style: context.textTheme.bodySmall?.copyWith(
                     color: Colors.white.withValues(alpha: 0.9),
                     fontWeight: FontWeight.w500,

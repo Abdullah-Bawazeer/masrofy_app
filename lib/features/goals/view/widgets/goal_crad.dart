@@ -4,25 +4,14 @@ import 'package:masrofy_app/core/extensions/build_context.dart';
 import 'package:masrofy_app/core/extensions/num_extension.dart';
 import 'package:masrofy_app/core/themes/app_colors.dart';
 import 'package:masrofy_app/core/themes/app_sizes.dart';
+import 'package:masrofy_app/features/goals/models/goal_modal.dart';
 
 class GoalCard extends StatelessWidget {
-  final String title;
-  final String current;
-  final String target;
-  final int percentage;
-  final double progressValue;
+  final GoalModal goal;
   final IconData icon;
   final Color color;
 
-  const GoalCard({
-    required this.title,
-    required this.current,
-    required this.target,
-    required this.percentage,
-    required this.progressValue,
-    required this.icon,
-    required this.color,
-  });
+  const GoalCard({required this.icon, required this.color, required this.goal});
 
   @override
   Widget build(BuildContext context) {
@@ -56,12 +45,12 @@ class GoalCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: context.textTheme.titleMedium),
+                Text(goal.title, style: context.textTheme.titleMedium),
                 4.verticalSpace,
-                Text('$current EGP', style: context.textTheme.bodyMedium),
+                Text('$goal.current YER', style: context.textTheme.bodyMedium),
                 2.verticalSpace,
                 Text(
-                  'من $target EGP',
+                  'من $goal.target YER',
                   style: context.textTheme.bodySmall?.copyWith(
                     color: isDark
                         ? AppColors.textSecondaryDark
@@ -78,7 +67,7 @@ class GoalCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '$percentage%',
+                '$goal.percentage%',
                 style: context.textTheme.bodySmall?.copyWith(
                   color: isDark
                       ? AppColors.textSecondaryDark
@@ -91,7 +80,7 @@ class GoalCard extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: 10.r.radius,
                   child: LinearProgressIndicator(
-                    value: progressValue,
+                    value: goal.progress,
                     minHeight: 6.h,
                     backgroundColor: isDark
                         ? AppColors.borderDark

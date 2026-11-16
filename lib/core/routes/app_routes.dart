@@ -39,7 +39,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.depts,
-        builder: (context, state) => const DeptsPage(),
+        builder: (context, state) => const DebtsPage(),
       ),
       GoRoute(
         path: AppRoutes.income,
