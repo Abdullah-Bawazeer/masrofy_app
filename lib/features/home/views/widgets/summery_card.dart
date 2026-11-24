@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:masrofy_app/core/constants/app_assets.dart';
 import 'package:masrofy_app/core/extensions/build_context.dart';
@@ -6,12 +7,16 @@ import 'package:masrofy_app/core/extensions/num_extension.dart';
 import 'package:masrofy_app/core/extensions/widget_extension.dart';
 import 'package:masrofy_app/core/themes/app_colors.dart';
 import 'package:masrofy_app/core/themes/app_sizes.dart';
+import 'package:masrofy_app/features/home/controller/statistics_providers.dart';
 
-class SummeryCard extends StatelessWidget {
+class SummeryCard extends ConsumerWidget {
   const SummeryCard({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final incomce = ref.watch(thisMonthIncomProvider);
+    final expense = ref.watch(thisMonthExpnseProvider);
+    final balance = ref.watch(thisMonthBalanceProvider);
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -74,8 +79,7 @@ class SummeryCard extends StatelessWidget {
                         textBaseline: TextBaseline.alphabetic,
                         children: [
                           Text(
-                            '12,450',
-                            // formatAmount('12,450'),
+                            balance.toStringAsFixed(2),
                             style: context.textTheme.displayMedium?.copyWith(
                               color: Colors.white,
                             ),
@@ -103,7 +107,7 @@ class SummeryCard extends StatelessWidget {
                     children: [
                       CardSubTitle(
                         title: "إجمالي الدخل",
-                        value: "1800",
+                        value: incomce.toStringAsFixed(2),
                         color: AppColors.primaryLight,
                       ),
                       AppSizes.m.horizontalSpace,
@@ -117,7 +121,7 @@ class SummeryCard extends StatelessWidget {
 
                       CardSubTitle(
                         title: "إجمالي المصروف",
-                        value: "9800",
+                        value: expense.toStringAsFixed(2),
                         color: AppColors.debt,
                       ),
                     ],

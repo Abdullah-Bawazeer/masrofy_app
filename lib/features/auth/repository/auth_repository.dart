@@ -36,7 +36,7 @@ class AuthRepository {
   }
 
   // get user
-  User? get currentUser => _auth.currentUser!;
+  User? get currentUser => _auth.currentUser;
 
   CollectionReference<Map<String, dynamic>> get _userColliction =>
       _firestore.collection('users');

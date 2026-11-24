@@ -1,20 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:masrofy_app/core/extensions/build_context.dart';
 import 'package:masrofy_app/core/extensions/num_extension.dart';
 import 'package:masrofy_app/core/extensions/widget_extension.dart';
 import 'package:masrofy_app/core/themes/app_colors.dart';
 import 'package:masrofy_app/core/themes/app_sizes.dart';
+import 'package:masrofy_app/features/home/controller/statistics_providers.dart';
 
-class OverviewSection extends StatelessWidget {
+class OverviewSection extends ConsumerWidget {
   const OverviewSection({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final todayExpense = ref.watch(todyaExpenseProvider);
+    final income = ref.watch(thisMonthIncomProvider);
+    final debts = ref.watch(unpaidDebtsProvider);
+    final goals = ref.watch(goalsProgressProvider);
     final overviewItems = [
       {
         'title': "مصاريف اليوم",
-        'value': '460',
+        'value': todayExpense,
         'currency': 'ج م',
         'icon': Icons.account_balance_wallet_outlined,
         'hasFilter': true,
@@ -26,7 +32,7 @@ class OverviewSection extends StatelessWidget {
       },
       {
         'title': "دخل الشهر الحالي",
-        'value': '8,250',
+        'value': income,
         'currency': 'ج م',
         'icon': Icons.account_balance_wallet_outlined,
         'hasFilter': false,
@@ -35,7 +41,7 @@ class OverviewSection extends StatelessWidget {
       },
       {
         'title': "إجمالي الديون",
-        'value': '5,200',
+        'value': debts,
         'currency': 'ج م',
         'icon': Icons.account_balance_wallet_outlined,
         'hasFilter': true,
@@ -45,7 +51,7 @@ class OverviewSection extends StatelessWidget {
       },
       {
         'title': "الأهداف المكتملة",
-        'value': '3 / 5',
+        'value': '${goals.completed} / ${goals.total}',
         'currency': '',
         'icon': Icons.track_changes_rounded,
         'hasFilter': false,
@@ -53,7 +59,6 @@ class OverviewSection extends StatelessWidget {
         'valueColor': AppColors.saving,
       },
     ];
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

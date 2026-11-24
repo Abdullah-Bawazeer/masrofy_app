@@ -1,156 +1,209 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:masrofy_app/core/constants/app_assets.dart';
+import 'package:masrofy_app/core/constants/data.dart';
 import 'package:masrofy_app/core/extensions/build_context.dart';
 import 'package:masrofy_app/core/extensions/num_extension.dart';
 import 'package:masrofy_app/core/extensions/widget_extension.dart';
 import 'package:masrofy_app/core/themes/app_colors.dart';
 import 'package:masrofy_app/core/themes/app_sizes.dart';
+import 'package:masrofy_app/core/widgets/custom_app_bar.dart';
+import 'package:masrofy_app/features/expenses/controller/expense_controller.dart';
+import 'package:masrofy_app/features/expenses/models/expense_category.dart';
+import 'package:masrofy_app/features/expenses/models/expense_entry_model.dart';
+import 'package:masrofy_app/features/expenses/view/widgets/add_expense.dart';
+import 'package:masrofy_app/features/expenses/view/widgets/months_list.dart';
 
-class ExpensesTab extends StatelessWidget {
-  const ExpensesTab({super.key});
+class TransactionsTab extends ConsumerStatefulWidget {
+  const TransactionsTab({super.key});
+
+  @override
+  ConsumerState<TransactionsTab> createState() => _ExpensesTabState();
+}
+
+class _ExpensesTabState extends ConsumerState<TransactionsTab> {
+  int _setMonth = DateTime.now().month;
+  int _setYear = DateTime.now().year;
+  String formatDateLabel(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final checkDate = DateTime(date.year, date.month, date.day);
+    if (checkDate == today) {
+      return 'اليوم';
+    } else if (checkDate == yesterday) {
+      return 'امس';
+    } else {
+      return DateFormat('d MMMM yyyy', 'ar').format(date);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final expenseController = ref.watch(expenseControllerProvider);
     final isDark = context.isDarkMode;
-    final List<Map<String, dynamic>> groups = [
-      {
-        'date': 'اليوم',
-        'items': [
-          {
-            'title': 'مطعم',
-            'subtitle': 'غداء مع الاصدقاء',
-            'time': '12:30',
-            'amount': '180',
-            'icon': Icons.restaurant_rounded,
-            'iconColor': AppColors.expense,
-            'isHighlighted': true,
-          },
-          {
-            'title': 'مواصلات',
-            'subtitle': 'مترو',
-            'time': '8:30',
-            'amount': '20',
-            'icon': Icons.directions_car_rounded,
-            'iconColor': AppColors.blue,
-            'isHighlighted': true,
-          },
-          {
-            'title': 'قهوة',
-            'subtitle': 'ستاربوكس',
-            'time': '7:45',
-            'amount': '45',
-            'icon': Icons.local_cafe_rounded,
-            'iconColor': AppColors.orange,
-            'isHighlighted': false,
-          },
-          {
-            'title': 'تسوق',
-            'subtitle': 'من سوبر ماركت',
-            'time': '6:30',
-            'amount': '215',
-            'icon': Icons.shopping_bag_rounded,
-            'iconColor': AppColors.success,
-            'isHighlighted': false,
-          },
-        ],
-      },
-      {
-        'date': 'امس',
-        'items': [
-          {
-            'title': 'فواتير',
-            'subtitle': 'فاتورة كهرباء',
-            'time': '4:30 م',
-            'amount': '350',
-            'icon': Icons.electric_bolt_rounded,
-            'iconColor': AppColors.purple,
-            'isHighlighted': true,
-          },
-          {
-            'title': 'تسوق',
-            'subtitle': 'ملابس',
-            'time': '2:10 م',
-            'amount': '320',
-            'icon': Icons.shopping_bag_rounded,
-            'iconColor': AppColors.success,
-            'isHighlighted': false,
-          },
-        ],
-      },
-    ];
 
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('المعاملات', style: context.textTheme.titleLarge).center(),
+          CustomAppBar(
+            title: "المصروفات",
+            addNewItem: () => AddExpenseBottomSheet.show(context),
+          ).center(),
           AppSizes.m.verticalSpace,
-          //summery card
-          const ExpensesSummeryCard(),
-          AppSizes.m.horizontalSpace,
+          expenseController.when(
+            data: (data) {
+              final filtered = data
+                  .where((e) => e.month == _setMonth && e.year == _setYear)
+                  .toList();
+              filtered.sort((a, b) => b.date.compareTo(a.date));
+              final totalExpenses = filtered.fold<double>(
+                0,
+                (sum, e) => sum + e.amount,
+              );
+              final Keys = {
+                '${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}',
+                ...data.map((e) => e.month_year),
+              }.toList()..sort((a, b) => b.compareTo(a));
 
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: groups.length,
-            itemBuilder: (context, groupIndex) {
-              final group = groups[groupIndex];
-              final date = group['date'] as String;
-              final items = group['items'] as List<Map<String, dynamic>>;
+              final Map<String, List<ExpenseEntryModel>> grouped = {};
+              for (var entry in filtered) {
+                final label = formatDateLabel(entry.date);
+                if (!grouped.containsKey(label)) {
+                  grouped[label] = [];
+                }
+                grouped[label]!.add(entry);
+              }
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    date,
-                    style: context.textTheme.bodySmall?.copyWith(
-                      color: isDark
-                          ? AppColors.textSecondaryDark
-                          : AppColors.textSecondaryLight,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.right,
-                  ).paddingAll(AppSizes.s),
-
-                  Container(
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.cardDark : AppColors.white,
-                      borderRadius: AppSizes.rL.radius,
-                      border: Border.all(
-                        color: isDark
-                            ? AppColors.borderDark
-                            : AppColors.borderLight,
-                      ),
-                    ),
-
-                    child: ListView.separated(
+                  ExpensesSummeryCard(
+                    total: totalExpenses.toString(),
+                    monthLabel: "${months[_setMonth - 1]}-$_setYear",
+                  ),
+                  AppSizes.l.verticalSpace,
+                  MonthSelector(
+                    monthYearKeys: Keys,
+                    selectedMonth: _setMonth,
+                    selectedYear: _setYear,
+                    activeColor: AppColors.expense,
+                    onMonthSelected: (m, y) => setState(() {
+                      _setMonth = m;
+                      _setYear = y;
+                    }),
+                  ),
+                  AppSizes.l.verticalSpace,
+                  if (filtered.isEmpty)
+                    Column(
+                      children: [
+                        AppSizes.xxl.verticalSpace,
+                        Icon(
+                          Icons.shopping_bag_outlined,
+                          size: AppSizes.iconXL,
+                          color: AppColors.grey400,
+                        ),
+                        AppSizes.m.verticalSpace,
+                        Text(
+                          'لا توجد مصروفات مسجلة لهذا الشهر',
+                          style: context.textTheme.bodyMedium?.copyWith(
+                            color: AppColors.grey500,
+                          ),
+                        ),
+                        AppSizes.m.verticalSpace,
+                        FilledButton.icon(
+                          onPressed: () => AddExpenseBottomSheet.show(context),
+                          icon: const Icon(Icons.add_rounded),
+                          label: Text('إضافة مصروف'),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppColors.expense,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ).center()
+                  else
+                    ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: items.length,
-                      separatorBuilder: (context, index) => Divider(
-                        height: 1,
-                        thickness: 0.5,
-                        color: isDark
-                            ? AppColors.dividerDark
-                            : AppColors.dividerLight,
-                      ),
-                      itemBuilder: (context, itemIndex) {
-                        final item = items[itemIndex];
-                        return TransactionItem(
-                          title: item['title'] as String,
-                          subtitle: item['subtitle'] as String,
-                          time: item['time'] as String,
-                          amount: item['amount'] as String,
-                          icon: item['icon'] as IconData,
-                          iconColor: item['iconColor'] as Color,
-                          isHighlighted: item['isHighlighted'] as bool,
+                      itemCount: grouped.keys.length,
+                      itemBuilder: (context, index) {
+                        final dateLabel = grouped.keys.elementAt(index);
+                        final items = grouped[dateLabel]!;
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Padding(
+                              padding: EdgeInsetsGeometry.symmetric(
+                                vertical: 8.h,
+                              ),
+                              child: Text(
+                                dateLabel,
+                                style: context.textTheme.bodySmall?.copyWith(
+                                  color: isDark
+                                      ? AppColors.textSecondaryDark
+                                      : AppColors.textSecondaryLight,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.right,
+                              ),
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? AppColors.cardDark
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(
+                                  AppSizes.rL,
+                                ),
+                                border: Border.all(
+                                  color: isDark
+                                      ? AppColors.borderDark
+                                      : AppColors.borderLight,
+                                ),
+                              ),
+                              child: ListView.separated(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: items.length,
+                                separatorBuilder: (context, index) => Divider(
+                                  height: 1,
+                                  thickness: 0.5,
+                                  color: isDark
+                                      ? AppColors.dividerDark
+                                      : AppColors.dividerLight,
+                                ),
+                                itemBuilder: (context, itemIndex) {
+                                  final item = items[itemIndex];
+                                  return InkWell(
+                                    onTap: () {
+                                      AddExpenseBottomSheet.show(
+                                        context,
+                                        entry: item,
+                                      );
+                                    },
+                                    child: _TransactionItem(
+                                      expenseEntryModel: item,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
                         );
                       },
                     ),
-                  ),
                 ],
               );
             },
+
+            error: (error, stack) =>
+                Text('تعذر تحميل المصروفات').center().paddingAll(AppSizes.xl),
+            loading: () => CircularProgressIndicator.adaptive()
+                .center()
+                .paddingAll(AppSizes.xl),
           ),
         ],
       ).paddingAll(AppSizes.screenPadding),
@@ -158,28 +211,18 @@ class ExpensesTab extends StatelessWidget {
   }
 }
 
-class TransactionItem extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final String time;
-  final String amount;
-  final IconData icon;
-  final Color iconColor;
-  final bool isHighlighted;
-  const TransactionItem({
-    super.key,
-    required this.title,
-    required this.subtitle,
-    required this.time,
-    required this.amount,
-    required this.icon,
-    required this.iconColor,
-    required this.isHighlighted,
-  });
+class _TransactionItem extends StatelessWidget {
+  final ExpenseEntryModel expenseEntryModel;
+  const _TransactionItem({required this.expenseEntryModel});
 
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
+    final category = ExpenseCategory.getById(expenseEntryModel.category);
+    // ignore: unused_local_variable
+    final categoryName = category.nameAr;
+    final timeStr = DateFormat('jm', 'ar').format(expenseEntryModel.date);
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppSizes.m, vertical: 12.h),
       child: Row(
@@ -190,24 +233,28 @@ class TransactionItem extends StatelessWidget {
                 width: 40.w,
                 height: 40.h,
                 decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.1),
+                  color: category.color.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: iconColor, size: AppSizes.iconS),
+                child: Icon(
+                  category.icon,
+                  color: category.color,
+                  size: AppSizes.iconS,
+                ),
               ),
               AppSizes.m.horizontalSpace,
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    title,
+                    expenseEntryModel.title,
                     style: context.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   4.verticalSpace,
                   Text(
-                    subtitle,
+                    expenseEntryModel.description,
                     style: context.textTheme.bodySmall?.copyWith(
                       color: isDark
                           ? AppColors.textSecondaryDark
@@ -220,7 +267,7 @@ class TransactionItem extends StatelessWidget {
           ),
           const Spacer(),
           Text(
-            time,
+            timeStr,
             style: context.textTheme.bodySmall?.copyWith(
               color: isDark
                   ? AppColors.textSecondaryDark
@@ -229,13 +276,9 @@ class TransactionItem extends StatelessWidget {
           ),
           const Spacer(),
           Text(
-            '$amount EGP',
+            '${expenseEntryModel.amount} YER',
             style: context.textTheme.bodyLarge?.copyWith(
-              color: isHighlighted
-                  ? AppColors.expense
-                  : (isDark
-                        ? AppColors.textPrimaryDark
-                        : AppColors.textSecondaryLight),
+              color: AppColors.expense,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -246,7 +289,13 @@ class TransactionItem extends StatelessWidget {
 }
 
 class ExpensesSummeryCard extends StatelessWidget {
-  const ExpensesSummeryCard({super.key});
+  final String total;
+  final String monthLabel;
+  const ExpensesSummeryCard({
+    required this.total,
+    required this.monthLabel,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -283,14 +332,14 @@ class ExpensesSummeryCard extends StatelessWidget {
                 textBaseline: TextBaseline.alphabetic,
                 children: [
                   Text(
-                    '3,850',
+                    total,
                     style: context.textTheme.headlineMedium?.copyWith(
                       color: Colors.white,
                     ),
                   ),
                   AppSizes.s.horizontalSpace,
                   Text(
-                    'EGP',
+                    'YER',
                     style: context.textTheme.headlineMedium?.copyWith(
                       color: Colors.white,
                     ),
@@ -314,7 +363,7 @@ class ExpensesSummeryCard extends StatelessWidget {
                     ),
                     AppSizes.xs.horizontalSpace,
                     Text(
-                      'هذا الشهر',
+                      monthLabel,
                       style: context.textTheme.bodySmall?.copyWith(
                         color: Colors.white,
                       ),
