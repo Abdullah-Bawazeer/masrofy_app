@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/src/core.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
 import 'package:masrofy_app/core/constants/data.dart';
 import 'package:masrofy_app/core/extensions/build_context.dart';
 import 'package:masrofy_app/core/extensions/widget_extension.dart';
@@ -11,8 +10,7 @@ import 'package:masrofy_app/core/themes/app_sizes.dart';
 import 'package:masrofy_app/core/widgets/custom_app_bar.dart';
 import 'package:masrofy_app/core/widgets/custom_app_scaffold.dart';
 import 'package:masrofy_app/features/incom/controller/income_controller.dart';
-import 'package:masrofy_app/features/incom/data/income_entry_model.dart';
-import 'package:masrofy_app/features/incom/view/widgets/icome_form_sheet.dart';
+import 'package:masrofy_app/features/incom/view/widgets/add_income_sheet.dart';
 import 'package:masrofy_app/features/incom/view/widgets/income_entry_card.dart';
 import 'package:masrofy_app/features/incom/view/widgets/income_summery_card.dart';
 
@@ -34,7 +32,10 @@ class _IncomePageState extends ConsumerState<IncomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            CustomAppBar(title: 'الدخل', addNewItem: () => _showForm(context)),
+            CustomAppBar(
+              title: 'الدخل',
+              addNewItem: () => AddIncomeBottomSheet.show(context),
+            ),
             AppSizes.m.verticalSpace,
             state.when(
               loading: () =>
@@ -139,7 +140,7 @@ class _IncomePageState extends ConsumerState<IncomePage> {
                           ),
                           AppSizes.m.verticalSpace,
                           FilledButton.icon(
-                            onPressed: () => _showForm(context),
+                            onPressed: () => AddIncomeBottomSheet.show(context),
                             icon: const Icon(Icons.add_rounded),
                             label: const Text('إضافة دخل'),
                           ),
@@ -153,7 +154,10 @@ class _IncomePageState extends ConsumerState<IncomePage> {
                         separatorBuilder: (_, __) => AppSizes.m.verticalSpace,
                         itemBuilder: (context, idx) => IncomeEntryCard(
                           entry: filtered[idx],
-                          onTap: () => _showForm(context, entry: filtered[idx]),
+                          onTap: () => AddIncomeBottomSheet.show(
+                            context,
+                            entry: filtered[idx],
+                          ),
                         ),
                       ),
                   ],
@@ -162,90 +166,6 @@ class _IncomePageState extends ConsumerState<IncomePage> {
             ),
           ],
         ).paddingAll(AppSizes.screenPadding),
-      ),
-    );
-  }
-
-  void _showForm(BuildContext context, {IncomeEntryModel? entry}) {
-    final titleCtrl = TextEditingController(text: entry?.title ?? '');
-    final descCtrl = TextEditingController(text: entry?.description ?? '');
-    final amountCtrl = TextEditingController(
-      text: entry != null ? entry.amount.toStringAsFixed(0) : '',
-    );
-    String cat = entry?.category ?? 'salary';
-    int m = entry?.month ?? _selMonth, y = entry?.year ?? _selYear;
-
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (sc) => StatefulBuilder(
-        builder: (ctx, setState) => IncomeFormSheet(
-          isDark: ctx.isDarkMode,
-          isEditing: entry != null,
-          titleController: titleCtrl,
-          descriptionController: descCtrl,
-          amountController: amountCtrl,
-          selectedCategory: cat,
-          onCategoryChanged: (val) => setState(() => cat = val),
-          onDelete: entry == null
-              ? null
-              : () async {
-                  final messenger = ScaffoldMessenger.of(context);
-                  ctx.pop();
-                  await ref
-                      .read(incomeControllerProvider.notifier)
-                      .deleteEntry(entry.id);
-                  messenger.showSnackBar(
-                    const SnackBar(content: Text('تم حذف الدخل بنجاح')),
-                  );
-                },
-          onSave: () async {
-            final title = titleCtrl.text.trim();
-            final amt =
-                double.tryParse(amountCtrl.text.replaceAll(',', '')) ?? 0;
-            final messenger = ScaffoldMessenger.of(ctx);
-            if (title.isEmpty || amt <= 0) {
-              messenger.showSnackBar(
-                const SnackBar(
-                  content: Text('أدخل اسمًا صحيحًا ومبلغًا أكبر من صفر'),
-                ),
-              );
-              return;
-            }
-            final newEntry = IncomeEntryModel(
-              id: entry?.id ?? '',
-              title: title,
-              description: descCtrl.text.trim(),
-              amount: amt,
-              month: m,
-              year: y,
-              category: cat,
-            );
-            try {
-              final n = ref.read(incomeControllerProvider.notifier);
-              if (entry != null) {
-                await n.updateEntry(newEntry);
-              } else {
-                await n.addEntry(newEntry);
-              }
-              if (context.mounted) ctx.pop();
-              messenger.showSnackBar(
-                SnackBar(
-                  content: Text(
-                    entry != null
-                        ? 'تم تعديل الدخل بنجاح'
-                        : 'تمت إضافة الدخل بنجاح',
-                  ),
-                ),
-              );
-            } catch (_) {
-              messenger.showSnackBar(
-                const SnackBar(content: Text('حدث خطأ أثناء حفظ البيانات')),
-              );
-            }
-          },
-        ),
       ),
     );
   }
