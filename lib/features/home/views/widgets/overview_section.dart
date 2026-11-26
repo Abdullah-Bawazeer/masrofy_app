@@ -20,7 +20,7 @@ class OverviewSection extends ConsumerWidget {
     final overviewItems = [
       {
         'title': "مصاريف اليوم",
-        'value': todayExpense,
+        'value': todayExpense.formatAmount,
         'currency': 'ج م',
         'icon': Icons.account_balance_wallet_outlined,
         'hasFilter': true,
@@ -32,7 +32,7 @@ class OverviewSection extends ConsumerWidget {
       },
       {
         'title': "دخل الشهر الحالي",
-        'value': income,
+        'value': income.formatAmount,
         'currency': 'ج م',
         'icon': Icons.account_balance_wallet_outlined,
         'hasFilter': false,
@@ -41,7 +41,7 @@ class OverviewSection extends ConsumerWidget {
       },
       {
         'title': "إجمالي الديون",
-        'value': debts,
+        'value': debts.formatAmount,
         'currency': 'ج م',
         'icon': Icons.account_balance_wallet_outlined,
         'hasFilter': true,

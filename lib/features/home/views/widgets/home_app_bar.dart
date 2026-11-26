@@ -27,7 +27,7 @@ class HomeAppBar extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "مرحبا   , ${user?.displayName}",
+              "مرحبا   , ${user.displayName}",
               style: context.textTheme.titleLarge,
             ),
             AppSizes.s.verticalSpace,

@@ -79,14 +79,14 @@ class SummeryCard extends ConsumerWidget {
                         textBaseline: TextBaseline.alphabetic,
                         children: [
                           Text(
-                            balance.toStringAsFixed(2),
+                            balance.formatAmount,
                             style: context.textTheme.displayMedium?.copyWith(
                               color: Colors.white,
                             ),
                           ),
                           AppSizes.s.horizontalSpace,
                           Text(
-                            'جنيه',
+                            'يمني',
                             style: context.textTheme.titleMedium?.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
@@ -107,7 +107,7 @@ class SummeryCard extends ConsumerWidget {
                     children: [
                       CardSubTitle(
                         title: "إجمالي الدخل",
-                        value: incomce.toStringAsFixed(2),
+                        value: incomce.formatAmount,
                         color: AppColors.primaryLight,
                       ),
                       AppSizes.m.horizontalSpace,
@@ -121,7 +121,7 @@ class SummeryCard extends ConsumerWidget {
 
                       CardSubTitle(
                         title: "إجمالي المصروف",
-                        value: expense.toStringAsFixed(2),
+                        value: expense.formatAmount,
                         color: AppColors.debt,
                       ),
                     ],
@@ -179,7 +179,7 @@ class CardSubTitle extends StatelessWidget {
               ),
               AppSizes.s.horizontalSpace,
               Text(
-                'جنيه',
+                'يمني',
                 style: context.textTheme.bodySmall?.copyWith(
                   color: AppColors.primaryLight,
                 ),
